@@ -3,7 +3,7 @@
     "test": "jest",
     "prepare": "husky install"
   },
-  "lint-staged" : {
+  "lint-staged": {
     "*.js": [
       "eslint",
       "prettier --write ."

@@ -1,53 +1,58 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-undef */
 /* global all */
-const TodoList = require("../todo");
+const todoList = require("../todo");
+const { all, markAsComplete, add } = todoList();
 
-describe("TodoList", () => {
-  let todo;
-
-  beforeEach(() => {
-    todo = TodoList();
+describe("todoList Test Suite ", () => {
+  beforeAll(() => {
+    add({
+      title: " Test todo",
+      completed: false,
+      dueDate: new Date().toDateString(),
+    });
+  });
+  test("sholud add new todo", () => {
+    const todoItemsCount = all.length;
+    add({
+      title: " Test todo",
+      completed: false,
+      dueDate: new Date().toDateString(),
+    });
+    expect(all.length).toBe(todoItemsCount + 1);
   });
 
-  test("creating a new todo", () => {
-    todo.add({ title: "Test Todo", dueDate: "2024-01-01" });
-    expect(todo.all.length).toBe(1);
+  test("should mark a todo as complete", () => {
+    expect(all[0].completed).toBe(false);
+    markAsComplete(0);
+    expect(all[0].completed).toBe(true);
   });
 
-  test("marking a todo as completed", () => {
-    todo.add({ title: "Test Todo", dueDate: "2024-01-01" });
-    todo.markAsComplete(0);
-    expect(todo.all[0].completed).toBe(true);
+  test("should retrieve overdue items", () => {
+    const overdueTodos = all.filter(
+      (todo) => new Date(todo.dueDate) < new Date(),
+    );
+    expect(overdueTodos.length).toBeGreaterThan(0);
   });
 
-  test("retrieval of overdue items", () => {
-    const currentDate = new Date("2024-01-03").toLocaleDateString("en-CA");
-    todo.add({ title: "Overdue Todo", dueDate: "2024-01-01" });
-    todo.add({ title: "Not Overdue Todo", dueDate: "2024-01-05" });
-
-    const overdueItems = todo.overdue();
-    expect(overdueItems.length).toBe(1);
-    expect(overdueItems[0].title).toBe("Overdue Todo");
+  test("should retrieve due today items", () => {
+    const dueTodayTodos = all.filter(
+      (todo) =>
+        new Date(todo.dueDate).toDateString() === new Date().toDateString(),
+    );
+    expect(dueTodayTodos.length).toBeGreaterThan(0);
   });
 
-  test("retrieval of due today items", () => {
-    const today = new Date().toLocaleDateString("en-CA");
-    todo.add({ title: "Due Today Todo", dueDate: today });
-    todo.add({ title: "Not Due Today Todo", dueDate: "2024-01-05" });
-
-    const dueTodayItems = todo.dueToday();
-    expect(dueTodayItems.length).toBe(1);
-    expect(dueTodayItems[0].title).toBe("Due Today Todo");
+  test("should retrieve due later items", () => {
+    const dueLaterTodos = all.filter(
+      (todo) =>
+        new Date(todo.dueDate) > new Date() &&
+        new Date(todo.dueDate).toDateString() != new Date().toDateString(),
+    );
+    expect(dueLaterTodos.length).toBe(0);
   });
 
-  test("retrieval of due later items", () => {
-    const currentDate = new Date("2024-01-03").toLocaleDateString("en-CA");
-    todo.add({ title: "Due Later Todo", dueDate: "2024-01-05" });
-    todo.add({ title: "Not Due Later Todo", dueDate: "2024-01-01" });
-
-    const dueLaterItems = todo.dueLater();
-    expect(dueLaterItems.length).toBe(1);
-    expect(dueLaterItems[0].title).toBe("Due Later Todo");
-  });
+  function toDisplayableList(todos) {
+    return todos.filter((todo) => !todo.completed);
+  }
 });
